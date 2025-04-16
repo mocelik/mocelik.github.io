@@ -1,105 +1,123 @@
 ---
 layout: default
+refactor: true
 ---
-<div class="container">
-  <h1 align="center">External Links</h1>
-  <!-- Custom Link Table Section -->
-  <div class="custom-link-table" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem;">
-    <!-- Column 1 -->
-    <div style="flex: 1 1 30%;">
-      <h2>C++</h2>
-      <ul>
-        <li>
-          <strong>Sources</strong>
-          <ul>
-            <li><a href="https://en.cppreference.com/w/">C++ reference</a></li>
-            <li><a href="https://eel.is/c++draft/">C++ standard</a> (<a href="https://wg21.link/std">PDF</a>)</li>
-            <li><a href="https://wg21.link/">WG21 Links</a></li>
-          </ul>
-        </li>
-        <li>
-          <strong>Online Tools</strong>
-          <ul>
-            <li><a href="https://godbolt.org/">Compiler Explorer</a></li>
-            <li><a href="https://quick-bench.com/">C++ Benchmark</a></li>
-            <li><a href="https://cppinsights.io/">C++ Insights</a></li>
-          </ul>
-        </li>
-        <li>
-          <strong>Guidelines</strong>
-          <ul>
-            <li><a href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines">Core Guidelines</a></li>
-            <li><a href="https://google.github.io/styleguide/cppguide.html">Google Style Guide</a></li>
-            <li>
-              <a href="https://bloomberg.github.io/bde/knowledge_base/coding_standards.html">Bloomberg Style Guide</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <strong>Resources</strong>
-          <ul>
-            <li><a href="https://www.youtube.com/@CppCon/videos">CppCon (YouTube)</a></li>
-            <li><a href="https://lwn.net/">LWN.net</a></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+{% include lang.html %}
 
-    <!-- Column 2 -->
-    <div style="flex: 1 1 30%;">
-      <h2>Linux</h2>
-      <ul>
-        <li><a href="https://docs.kernel.org/">Kernel Documentation</a></li>
-        <li><a href="https://elixir.bootlin.com/linux/latest/source">Linux source code (Bootlin)</a></li>
-        <li>
-          <a href="https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/"
-            >Kernel Development Guide</a
-          >
-        </li>
-        <li><a href="https://refspecs.linuxbase.org/">Linux Foundation Referenced Specifications</a></li>
-      </ul>
+{{ content }}
 
-      <h2>Shell</h2>
-      <ul>
-        <li><a href="https://explainshell.com/">ExplainShell</a></li>
-        <li><a href="https://www.shellcheck.net/">ShellCheck</a></li>
-        <li><a href="https://google.github.io/styleguide/shellguide.html">Shell Style Guide</a></li>
-        <li>
-          <a href="https://access.redhat.com/sites/default/files/attachments/rh_ip_command_cheatsheet_1214_jcs_print.pdf"
-            >IP commands</a
-          >
-          (<a href="https://web.archive.org/web/20250130161411/https://access.redhat.com/sites/default/files/attachments/rh_ip_command_cheatsheet_1214_jcs_print.pdf"
-            >alt</a
-          >)
-        </li>
-      </ul>
-    </div>
+{% assign all_pinned = site.posts | where: 'pin', 'true' %}
+{% assign all_normal = site.posts | where_exp: 'item', 'item.pin != true and item.hidden != true' %}
 
-    <!-- Column 3 -->
-    <div style="flex: 1 1 30%;">
-      <h2>Internet &amp; Browsers</h2>
-      <ul>
-        <li><a href="https://www.abuseipdb.com/">Abuse IPDB</a></li>
-        <li><a href="https://dnschecker.org/">DNS Checker</a></li>
-        <li><a href="https://www.ssllabs.com/ssltest/analyze.html">SSL Server Test</a></li>
-        <li><a href="https://www.amiunique.org/">Am I Unique?</a></li>
-        <li><a href="https://browserleaks.com/">Browser Leaks</a></li>
-      </ul>
+{% assign posts = '' | split: '' %}
 
-      <h2>Reference Manuals</h2>
-      <ul>
-        <li><a href="https://man7.org/linux/man-pages/">Man Pages</a></li>
-        <li><a href="https://www.gnu.org/software/bash/manual/bash.html">Bash Reference Manual</a></li>
-        <li><a href="https://gcc.gnu.org/onlinedocs/">GCC Reference Manual</a></li>
-        <li><a href="https://www.gnu.org/software/make/manual/make.html">Make Reference Manual</a></li>
-        <li><a href="https://beej.us/guide/bgnet/">Beej’s Guide to Network Programming</a></li>
-      </ul>
-    </div>
-  </div>
+<!-- Get pinned posts on current page -->
 
-  <!-- Chirpy’s built-in post list with cards -->
-  <h1 align="center">Posts</h1>
-  <div id="post-list">
-    {% include home.html %}
-  </div>
+{% assign visible_start = paginator.page | minus: 1 | times: paginator.per_page %}
+{% assign visible_end = visible_start | plus: paginator.per_page %}
+
+{% if all_pinned.size > visible_start %}
+  {% if all_pinned.size > visible_end %}
+    {% assign pinned_size = paginator.per_page %}
+  {% else %}
+    {% assign pinned_size = all_pinned.size | minus: visible_start %}
+  {% endif %}
+
+  {% for i in (visible_start..all_pinned.size) limit: pinned_size %}
+    {% assign posts = posts | push: all_pinned[i] %}
+  {% endfor %}
+{% else %}
+  {% assign pinned_size = 0 %}
+{% endif %}
+
+<!-- Get normal posts on current page -->
+
+{% assign normal_size = paginator.posts | size | minus: pinned_size %}
+
+{% if normal_size > 0 %}
+  {% if pinned_size > 0 %}
+    {% assign normal_start = 0 %}
+  {% else %}
+    {% assign normal_start = visible_start | minus: all_pinned.size %}
+  {% endif %}
+
+  {% assign normal_end = normal_start | plus: normal_size | minus: 1 %}
+
+  {% for i in (normal_start..normal_end) %}
+    {% assign posts = posts | push: all_normal[i] %}
+  {% endfor %}
+{% endif %}
+
+<div id="post-list" class="flex-grow-1 px-xl-1">
+  {% for post in posts %}
+    <article class="card-wrapper card">
+      <a href="{{ post.url | relative_url }}" class="post-preview row g-0 flex-md-row-reverse">
+        {% assign card_body_col = '12' %}
+
+        {% if post.image %}
+          {% assign src = post.image.path | default: post.image %}
+          {% unless src contains '//' %}
+            {% assign src = post.media_subpath | append: '/' | append: src | replace: '//', '/' %}
+          {% endunless %}
+
+          {% assign alt = post.image.alt | xml_escape | default: 'Preview Image' %}
+
+          {% assign lqip = null %}
+
+          {% if post.image.lqip %}
+            {% capture lqip %}lqip="{{ post.image.lqip }}"{% endcapture %}
+          {% endif %}
+
+          <div class="col-md-5">
+            <img src="{{ src }}" alt="{{ alt }}" {{ lqip }}>
+          </div>
+
+          {% assign card_body_col = '7' %}
+        {% endif %}
+
+        <div class="col-md-{{ card_body_col }}">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">{{ post.title }}</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>{% include post-description.html %}</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                {% include datetime.html date=post.date lang=lang %}
+
+                <!-- categories -->
+                {% if post.categories.size > 0 %}
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    {% for category in post.categories %}
+                      {{ category }}
+                      {%- unless forloop.last -%},{%- endunless -%}
+                    {% endfor %}
+                  </span>
+                {% endif %}
+              </div>
+
+              {% if post.pin %}
+                <div class="pin ms-1">
+                  <i class="fas fa-thumbtack fa-fw"></i>
+                  <span>{{ site.data.locales[lang].post.pin_prompt }}</span>
+                </div>
+              {% endif %}
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  {% endfor %}
 </div>
+<!-- #post-list -->
+
+{% if paginator.total_pages > 1 %}
+  {% include post-paginator.html %}
+{% endif %}
