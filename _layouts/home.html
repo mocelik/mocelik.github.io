@@ -2,6 +2,7 @@
 layout: default
 ---
 <div class="container">
+  <h1 align="center">External Links</h1>
   <!-- Custom Link Table Section -->
   <div class="custom-link-table" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem;">
     <!-- Column 1 -->
@@ -96,15 +97,9 @@ layout: default
     </div>
   </div>
 
-  <!-- Insert Posts -->
-  <div class="post__list">
-    {% for post in paginator.posts %}
-      <article class="list__item">
-        <h2>
-          <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-        </h2>
-        <p>{{ post.excerpt | strip_html | truncate: 160 }}</p>
-      </article>
-    {% endfor %}
+  <!-- Chirpy’s built-in post list with cards -->
+  <h1 align="center">Posts</h1>
+  <div id="post-list">
+    {% include home.html %}
   </div>
 </div>
