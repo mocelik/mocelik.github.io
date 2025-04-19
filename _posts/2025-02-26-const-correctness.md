@@ -9,7 +9,7 @@ title: Const Correctness
 
 Const correctness refers to the correct use of `const` to indicate whether a variable or parameter shall be modified or not. Other languages may inherently make variables const (“immutable”) by default, with a mutable values explicitly defined as such with a separate keyword: sometimes I wonder whether this is a better approach. When tracing some data over many function calls, having those functions respect const correctness allows the reader to skip reading those function calls, knowing the data cannot change.
 
-In regards to performance, there are significant runtime performance benefits from using `constexpr` or `consteval` where appropriate. There are fewer (if any) performance benefits from using a runtime constant (plain `const`). However, my belief is that the improved readability will indirectly result in more time that can be dedicated to performance when and where it matters.
+In regards to performance, there are significant runtime performance benefits from using compile-time constants where possible, like `constexpr` or `consteval`. There are fewer (if any) performance benefits from using a runtime constant (plain `const`). However, my belief is that the improved readability and compiler-enforced constness speeds up development, which indirectly results in more time that can be dedicated to performance when and where it matters.
 
 Before going further, I recommend reading the [ISO C++ section](https://isocpp.org/wiki/faq/const-correctness) on const correctness. It is a more official source of information and provides great examples.
 

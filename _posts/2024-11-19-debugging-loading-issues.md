@@ -47,9 +47,9 @@ As mentioned, static linking is when an object file (.o) or archive file (.a) is
 
 If the above main.c is compiled into an object file, `gcc -c main.c`, then it successfully produces an object file, `main.o`. However, if there is an attempt to compile and link it as an executable, `gcc main.c`, then we get an error:
 
-```bash
-$ gcc -c main.c # Succeeds
-$ gcc main.c # Error
+```console
+$ gcc -c main.c  # Succeeds
+$ gcc main.c     # Error
 /usr/bin/ld: /tmp/ccFEwSvr.o: in function `main':
 main.c:(.text+0xe): undefined reference to `foo'
 collect2: error: ld returned 1 exit status
@@ -71,7 +71,7 @@ The library can now be used to link with `main.o`, with the important rule that 
 
 While it is possible to link directly to the archive, libraries are usually linked via a `-l` flag with the name of the library, excluding the `lib` prefix and `.a` suffix, as such: `gcc main.o -lfoo`. However, if you try running this command, you will see that it fails with a linker error:
 
-```shell
+```console
 $ gcc main.o -lfoo
 /usr/bin/ld: cannot find -lfoo: No such file or directory
 collect2: error: ld returned 1 exit status
@@ -93,7 +93,7 @@ To create a shared library, you must compile the source file with the `-fpic` (o
 
 When linking, as before, you must inform the linker of where to find the shared library. Once again, this can be done by setting either the `LIBRARY_PATH` environment variable, or, preferably, by using the `-L` flag: `gcc main.o -lfoo -L .`, otherwise we will run into the same issue:
 
-```shell
+```console
 $ gcc -c -fpic foo.c
 $ gcc -shared foo.o -o libfoo.so
 $ gcc main.o -lfoo
@@ -104,14 +104,14 @@ $ gcc main.o -lfoo -L . # Succeeds
 
 Even you resolve this error by providing the path to the library via `-L`, the executable will still report an error at runtime. You will likely see an error like this:
 
-```shell
+```console
 $ ./a.out
 ./a.out: error while loading shared libraries: libfoo.so: cannot open shared object file: No such file or directory
 ```
 
 The linker that was able to connect the dots and create the reference to the library was the static linker, `ld` (see `<a href="https://man7.org/linux/man-pages/man1/ld.1.html">man ld</a>`), whereas the linker that executes the executable and loads requisite libraries at runtime is the dynamic linker, `ld.so` (see `<a href="https://man7.org/linux/man-pages/man8/ld.so.8.html">man ld.so</a>`). Yes, the names are confusing. To confirm that your executable is loaded via `ld.so`, you may run `file ./a.out` and look for the `interpreter` field:
 
-```shell
+```console
 $ file ./a.out
 ./a.out: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, <strong>interpreter /lib64/ld-linux-x86-64.so.2</strong>, BuildID[sha1]=6a54363596cf0f19bda44d43ed6adc4e9daf7603, for GNU/Linux 3.2.0, not stripped
 ```
@@ -122,7 +122,7 @@ In this case, on my machine, the interpreter is not named exactly `ld.so`, but r
 
 Once again, the linker error from before:
 
-```shell
+```console
 $ ./a.out
 ./a.out: error while loading shared libraries: libfoo.so: cannot open shared object file: No such file or directory
 ```
@@ -150,7 +150,7 @@ At build time, the libraries that were linked to can be found by simply looking 
 
 At runtime, as previously mentioned, the libraries that are dynamically linked are linked by `ld.so`. The `ldd` tool (ldd standing for List Dynamic Dependencies) can be used to figure out which libraries were linked. Running `ldd ./a.out` gives output like this:
 
-```shell
+```console
 $ ldd ./a.out
 linux-vdso.so.1 (0x00007ffeab351000)
 libfoo.so => ./libfoo.so (0x00007fa5745d9000)
@@ -160,7 +160,7 @@ libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fa5743a5000)
 
 Unfortunately, `ldd` does not explain *how* those libraries were found or *why* those specific libraries were chosen over others. To figure that out, a more verbose approach is required: the `LD_DEBUG` environment variable can be set to `libs`, and it will print out the paths that `ld.so` searched for, and why it made that specific decision. The full output of `LD_DEBUG=libs ./a.out` is a too long to share here, but a summarized version looks like this:
 
-```shell
+```console
 $ LD_DEBUG=libs ./a.out 
      13551:     find library=libfoo.so [0]; searching
      13551:      search path=./x86_64:.                (LD_LIBRARY_PATH)
@@ -180,7 +180,7 @@ This works because `ld.so` reads the `LD_DEBUG` environment variable and prints 
 
 Sometimes, there may be multiple versions of a library in your system. If the different versions expose different symbols (functions), you may end up in a situation where your build succeeds, but your executable fails to load with an error message like this:
 
-```shell
+```console
 $ ./a.out
 ./a.out: symbol lookup error: ./a.out: undefined symbol: foo
 ```
@@ -193,14 +193,14 @@ Since this issue did not occur during the build step, there likely *is* a `libfo
 
 Sometimes, your application may depend on a library, libfoo.so, and the library may depend on another library, libbar.so. In those cases, when your application is loaded and executed, libbar.so will also be loaded into memory. However, if your application uses a symbol from libbar.so, you must explicitly link your application to it. Otherwise, you will come across an error message as follows:
 
-```
+```console
 $ gcc main.o -lfoo
 error adding symbols: DSO missing from command line
 ```
 
 This is because the libbar.so dependency of libfoo.so is an implementation detail; another implementation of libfoo.so may not have that dependency. Your application must not depend on the implementation details of its dependencies. So, if you use symbols from both libfoo.so and libbar.so, you must add both `-lfoo` and `-lbar` to your command line.
 
-```
+```console
 $ gcc main.o -lfoo -lbar
 ```
 
