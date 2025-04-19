@@ -70,11 +70,14 @@ To set this pattern permanently, you can add the line `kernel.core_pattern = cor
 
 ### Configuring ulimit
 
-The `kernel.core_pattern` parameter was a **kernel-wide limit**, affecting everything. There are also some **per-user** or **per-process** limits. These limits can be found by running `ulimit -a` (or by running `cat /proc/$$/limits`). `ulimit` is not (and cannot be) an executable: it is a shell builtin command because it needs to modify the running shell, and is documented for bash [here](https://www.man7.org/linux/man-pages/man1/bash.1.html). There is more info on `ulimit` [here](https://ss64.com/bash/ulimit.html). The `csh` shell uses a builtin called `limit`, and the syntax is slightly different, see [here](https://linux.die.net/man/1/csh).
+The `kernel.core_pattern` parameter was a **kernel-wide limit**, affecting everything. In the Linux Kernel, there are also some **per-user** or **per-process** limits. These limits can be found by running `ulimit -a` (or by running `cat /proc/$$/limits`). `ulimit` is not (and cannot be) an executable: it is a shell builtin command because it needs to modify the running shell, and is documented for bash [here](https://www.man7.org/linux/man-pages/man1/bash.1.html). The `csh` shell uses a builtin called `[limit](https://linux.die.net/man/1/csh)`, and the syntax is slightly different.
 
-There is a concept of a **hard limit** and a **soft limit**. The soft limit is the effective limitation, and can be configured by the user to be increased up to a maximum of the hard limit. Privileged (root) processes can increase or decrease the hard limit. Non-privileged processes can decrease the hard limit, but usually cannot increase it back to the original hard limit. You can add a `-H` or `-S` to `ulimit` to print the hard or soft limit respectively.
+There are two types of limits: a **hard limit** and a **soft limit**. The soft limit is the effective limitation, and can be configured by the user to be increased up to a maximum of the hard limit. Privileged (root) processes can increase or decrease the hard limit. Non-privileged processes can decrease the hard limit, but usually cannot increase it back to the original hard limit. You can add a `-H` or `-S` to `ulimit -a` to print the hard or soft limit respectively.
 
-The limit relevant to core dumps is the “core file size” limit, and can be printed by running `ulimit -c`. This limit controls the maximum size of a generated coredump in kilobytes. If set to 0, then core dumps will not be generated at all. You can increase the limit to unlimited by running `ulimit -c unlimited`. Do not use `sudo`. Fortunately, the hard limit is *usually* already set to `unlimited`.
+> The process limits within a `sudo` command may be different than the limits in your normal shell; you can verify those limits by running `sudo sh -c "ulimit -Hc && ulimit -Sc"`.
+{: .prompt-info }
+
+The limit relevant to core dumps is the “core file size” limit, and can be printed by running `ulimit -c`. This value is the maximum size of a generated coredump in kilobytes. If set to 0, then core dumps will not be generated at all. You can increase the limit to unlimited by running `ulimit -c unlimited`. Do not use `sudo`. Fortunately, the hard limit is *usually* already set to `unlimited`. The following shows an example of reading the hard and soft limits, then increasing the soft limit to the maximum.
 
 ```console
 $ ulimit -Hc           # Read the Hard core limit
@@ -97,28 +100,30 @@ Like environment variables, `ulimit` settings are inherited by sub-processes, in
 > On some systems, `*` may not include the `root` user for security purposes.
 {: .prompt-warning }
 
-If you run into permission errors when trying to increase this limit, verify that the hard limit is higher than what you are setting the soft limit to. If you are setting the hard limit, ensure you have root privileges, or increase your users' limits trhough the `/etc/security/limits.conf` configuration (and reboot).
+If you run into permission errors when trying to increase a soft limit, verify that the hard limit is higher than what you are setting the soft limit to. If you get permission errors when setting the hard limit, ensure you have root privileges, or try to increase your users' limits through the `/etc/security/limits.conf` configuration  instead (and reboot).
 
-If you need to set the limits in a process that is run automatically, for example through a system service, you may need to configure the global limits through `/etc/security/limits.conf`.
+If you need to set the limits in a process that is run automatically you may need to configure the global limits through `/etc/security/limits.conf`.
 
-If you are running within a docker container, there are some more complications that may occur that are expanded on in the next section.
+There are some more complications that may occur within Docker containers, which are expanded upon in the next section.
 
 ### Docker Containers
-Docker containers bring in a new level of complexity as it pertains to process limits. The limit can be set when the container is [built](https://docs.docker.com/reference/cli/docker/buildx/build/#ulimit), is [run](https://docs.docker.com/reference/cli/docker/container/run/#ulimit), or they can be set through the Docker daemon, [dockerd](https://docs.docker.com/reference/cli/dockerd/#default-ulimit-settings).
+Docker containers bring in a new level of complexity as it pertains to process limits. The limit can be set when the container is [built](https://docs.docker.com/reference/cli/docker/buildx/build/#ulimit), is [run](https://docs.docker.com/reference/cli/docker/container/run/#ulimit), or they can be set through the Docker daemon configuration, [dockerd](https://docs.docker.com/reference/cli/dockerd/#default-ulimit-settings).
 
-If none of those are set, then the values are taken from the Docker daemon process itself: how was the Docker daemon started? Was it started as a system service, or did was it started manually by running `sudo dockerd &`? Keep in mind that the process limits within a `sudo` command may be different than the limits in your normal shell; you can try running `sudo sh -c "ulimit -Hc && ulimit -Sc"` to verify the limits seen by `sudo`.
+If none of those are set, then the values are taken from the Docker daemon process itself: how was the Docker daemon started? Was it started as a system service, or was it started manually by running `sudo dockerd &`?
 
-To verify the limits within a docker container, you can use the official `bash` container: `docker run bash sh -c "ulimit -Hc && ulimit -Sc"`.
+> To verify the limits within a docker container, you can use the official `bash` container:
+> `docker run bash sh -c "ulimit -Hc && ulimit -Sc"`
+{: .prompt-info }
 
-The easiest way to configure the limits within docker is to use the [docker daemon configuration file](https://docs.docker.com/reference/cli/dockerd/#daemon-configuration-file) to configure the ulimits used by the docker daemon globally. [On Linux](https://docs.docker.com/reference/cli/dockerd/#on-linux), this is set to `/etc/docker/daemon.json`. Here's an example of a configuration file:
+The easiest way to configure the limits within docker is to use the [docker daemon configuration file](https://docs.docker.com/reference/cli/dockerd/#daemon-configuration-file) to configure the ulimits used by the docker daemon globally. [On Linux](https://docs.docker.com/reference/cli/dockerd/#on-linux), this is set to `/etc/docker/daemon.json`. Here's an example of a configuration file that sets the hard limit to unlimited and the soft limit to 0:
 
 ```json
 {
   "default-ulimits": {
     "core": {
       "Name": "core",
-      "Soft": 0,
-      "Hard": -1
+      "Hard": -1,
+      "Soft": 0
     }
   }
 }
@@ -128,7 +133,7 @@ The `"Name"` field does not choose the name of the core dump file; it's just the
 
 ### Other Possible Issues
 
-Fixing the `kernel.core_pattern` and `ulimit -c` settings solve most problems by far. If those settings are valid and core dumps are still not being generated, there may be issues during the writing of the core file itself. For example, the destination directory may not be writable. This can happen if the directory does not exist, if it has a missing write permission, if the filesystem ran out of space or if it was mounted without write permissions. Another reason could be if the destination file already exists and cannot be overwritten.
+Fixing the `kernel.core_pattern` and `ulimit -c` settings solve most problems. If those settings are valid and core dumps are still not being generated, there may be issues during the writing of the core file itself. For example, the destination directory may not be writable. This can happen if the directory does not exist, if it has a missing write permission, if the filesystem ran out of space or if it was mounted without write permissions. Another reason could be if the destination file already exists and cannot be overwritten.
 
 There are some other edge cases that are covered in the [core dump manual](https://www.man7.org/linux/man-pages/man5/core.5.html) that mainly revolve around the access permissions of the directory or of the running process' binary.
 
