@@ -192,8 +192,8 @@ LIB_PATHS="/lib/. /lib64/. /usr/lib/. /usr/lib64/. /usr/local/lib/."
 
 mkdir -p ${LOCAL_SYSROOT}
 for LIB_PATH in ${LIB_PATHS}; do
-  mkdir -p ${LOCAL_SYSROOT}${LIB_PATH}
-  docker cp ${CONTAINER_NAME}:${LIB_PATH} ${LOCAL_SYSROOT}${LIB_PATH}
+    mkdir -p ${LOCAL_SYSROOT}${LIB_PATH}
+    docker cp ${CONTAINER_NAME}:${LIB_PATH} ${LOCAL_SYSROOT}${LIB_PATH}
 done
 
 # ...

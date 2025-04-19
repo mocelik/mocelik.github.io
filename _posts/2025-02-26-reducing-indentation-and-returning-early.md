@@ -11,20 +11,20 @@ Consider the following function that calculates a price based on a provided pric
 ```cpp
 enum class ErrorCode { INTERNAL_ERROR, BAD_COUPON };
 std::expected<int, ErrorCode> calculate_total(int price, float tax, std::string coupon_code) {
-  if (is_valid(coupon_code)) {
-    int price_after_discounts = price - calculate_discount(coupon_code);
-    if (price_after_discounts >= 0) {
-      if (tax >= 1) {
-        return price_after_discounts * tax;
-      } else {
-        return std::unexpected{ErrorCode::INTERNAL_ERROR};
-      }
+    if (is_valid(coupon_code)) {
+        int price_after_discounts = price - calculate_discount(coupon_code);
+        if (price_after_discounts >= 0) {
+            if (tax >= 1) {
+                return price_after_discounts * tax;
+            } else {
+                return std::unexpected{ErrorCode::INTERNAL_ERROR};
+            }
+        } else {
+            return 0;
+        }
     } else {
-      return 0;
+        return std::unexpected{ErrorCode::BAD_COUPON};
     }
-  } else {
-    return std::unexpected{ErrorCode::BAD_COUPON};
-  }
 }
 ```
 
@@ -35,20 +35,20 @@ Consider the refactored version:
 ```cpp
 enum class ErrorCode { INTERNAL_ERROR, BAD_COUPON };
 std::expected<int, ErrorCode> calculate_total(int price, float tax, std::string coupon_code) {
-  if (!is_valid(coupon_code)) {
-    return std::unexpected{ErrorCode::BAD_COUPON};
-  }
-  
-  int price_after_discounts = price - calculate_discount(coupon_code);
-  if (price_after_discounts < 0) {
-    return 0;
-  }
-  
-  if (tax < 1) {
-    return std::unexpected{ErrorCode::INTERNAL_ERROR};
-  }
-  
-  return price_after_discounts * tax;
+    if (!is_valid(coupon_code)) {
+        return std::unexpected{ErrorCode::BAD_COUPON};
+    }
+
+    int price_after_discounts = price - calculate_discount(coupon_code);
+    if (price_after_discounts < 0) {
+        return 0;
+    }
+
+    if (tax < 1) {
+        return std::unexpected{ErrorCode::INTERNAL_ERROR};
+    }
+
+    return price_after_discounts * tax;
 }
 ```
 

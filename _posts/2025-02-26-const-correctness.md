@@ -104,8 +104,10 @@ The only thing they cannot do is to use the returned rvalue directly in a non-co
 
 ```cpp
 struct MyStruct {
-  void do_something() {}
+    void do_something() {}
 };
+
+const MyStruct create_const() { return MyStruct {}; }
 
 int main() {
     // error: passing 'const MyStruct' as 'this' argument discards qualifiers

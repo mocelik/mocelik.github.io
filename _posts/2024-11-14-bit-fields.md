@@ -145,9 +145,9 @@ In the case above with 16-bits spread over 3 bytes, the standard defers to the i
 
 ```cpp
 struct PortableBitfield {
-   uint16_t first  : 7;
-   uint16_t second : 7;
-   uint16_t third  : 2;
+    uint16_t first  : 7;
+    uint16_t second : 7;
+    uint16_t third  : 2;
 };
 ```
 
@@ -166,8 +166,7 @@ Having studied the case where using a uint16_t can prevent straddling, there may
 The alignment and padding of a struct can sometimes be controlled through attributes provided by the compiler. Specifically, the `__attribute__((packed))` or `#pragma pack` attributes can be used as follows:
 
 ```cpp
-struct __attribute__((packed)) 
-  PackedBitfield {
+struct __attribute__((packed)) PackedBitfield {
     uint16_t first  : 7;
     uint16_t second : 7;
     uint16_t third  : 2;

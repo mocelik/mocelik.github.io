@@ -10,13 +10,13 @@ When we begin reading a class definition, we read top-down. When we want to know
 
 ```cpp
 class MyClass {
-  public:
-  void func1(int, char);
-  void func2(long, int);
-  void func3(int*);
+public:
+    void func1(int, char);
+    void func2(long, int);
+    void func3(int*);
 
-  // Constructor
-  MyClass() = default;
+    // Constructor
+    MyClass() = default;
 };
 ```
 
@@ -24,13 +24,13 @@ In the example above, the reader encounters member functions before they see the
 
 ```cpp
 class MyClass {
-  public:
-  // Constructor
-  MyClass() = default;
-  
-  void func1(int, char);
-  void func2(long, int);
-  void func3(int*);
+public:
+    // Constructor
+    MyClass() = default;
+
+    void func1(int, char);
+    void func2(long, int);
+    void func3(int*);
 };
 ```
 

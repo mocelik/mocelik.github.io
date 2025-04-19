@@ -30,14 +30,14 @@ Each of these stages can fail for different reasons. The following sections dive
 int foo(); // function declaration
 
 int main() {
-  return foo();
+    return foo();
 }
 ```
 
 ```c
 // foo.c
 int foo() { // function definition
-  return 0;
+    return 0;
 }
 ```
 
