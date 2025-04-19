@@ -17,34 +17,4 @@ Pierre Bonnard was an artist, and made the statement above in the context of art
 
 I don’t mean to understate the difficulty of finding an appropriate name. However, if this is a consistent issue, it may be because the roles of the components in the system are not properly defined. It may also be due to a lack of understanding or application of design patterns. Design patterns have ubiquitous terminology. While one may unknowingly use design patterns in their code with their own custom terminology, a reader who is already familiar with design patterns would grasp the concepts quicker if existing terminology is reused.
 
-When it comes to naming standards like capitalization, camelCase or snake\_case and so on, it’s extremely important to consistently uphold those standards throughout the codebase. Naming standards can help a reader identify, at a glance, what the type or scope of something is. If the standards are not consistently applied and enforced, then readers will either not trust the standards, in which case they’re no longer effective, or worse, they will trust the standards and be misguided.
-
-Below are some of my preferences, subject to change over time or over different projects.
-
-### Namespaces
-
-- Namespaces must be lower case 
-    - This allows differentiating free functions from static class member functions
-- Allow common abbreviations but don’t enforce short namespaces
-- Use one top level namespace with one nested layer such that cross-namespace interactions are reduced 
-    - Exceptions to the one-nested-layer may be inline namespaces, such as for ABI versioning, or detail/implementation namespaces that aren’t meant to be seen by the users
-
-### Classes
-
-- Classes must start with capital letters
-- PascalCase
-- Only the first letter in an acronym is capitalized, e.g. Rpc instead of RPC
-
-### Variables
-
-- Lower case
-- Forbid Hungarian Notation dependent on type 
-    - Do not prefix/suffix pointer types with “p”, booleans with “b” and so on.
-    - The type of an object is less relevant than the purpose of the object. If the object survives a refactoring, it may have a different type but fulfill the same purpose.
-- Must use Hungarian Notation dependent on scope 
-    - The scope is relevant to the purpose of a variable
-    - Prefer adding an `m_` and `s_`prefix for class member and static class member variables respectively.
-    - Don’t use non-const globals, but if you really need, to then perhaps use a `g_` prefix.
-    - Prefer ALL\_CAPS for const global variables or enumerations
-    - Discourage prefixing local variables or function parameters
-- snake\_case
+When it comes to naming standards like capitalization, camelCase or snake\_case and so on, it’s extremely important to consistently uphold those standards throughout the codebase. Naming standards can help a reader identify, at a glance, what the type or scope of something is. If the standards are not consistently applied and enforced, then readers will either not trust the standards, in which case they’re no longer effective, or worse, they will trust the standards and make wrong assumptions.
